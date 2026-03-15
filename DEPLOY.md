@@ -101,7 +101,12 @@ Optional for local dev: leave `CREDENTIAL_ENCRYPTION_KEY`, `ADMIN_*`, or `NEXT_P
 - In your DNS: add the CNAME record Railway shows.
 - Set `NEXT_PUBLIC_APP_URL` to `https://app.compd.trade` and redeploy.
 
-## 7. Cap and security
+## 7. If the app shows "Application failed to respond"
+
+- **Build vs runtime:** Build logs only show the image build. If the app doesn’t load, open the service in Railway → **Deployments** → click the latest deployment → **View Logs** (runtime logs). Check for startup errors (e.g. missing `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, or Supabase vars).
+- **Listen on all interfaces:** The start command uses `next start --hostname 0.0.0.0` so the server is reachable inside the container. If you override the start command, keep the hostname.
+
+## 8. Cap and security
 
 - **100 testers:** Enforced by invite tokens and `invite_token_used` on profiles; remaining seats shown on invite page and in admin.
 - **Kalshi credentials:** Each user enters their own in Dashboard; stored encrypted (AES-256-GCM) when `CREDENTIAL_ENCRYPTION_KEY` is set.
