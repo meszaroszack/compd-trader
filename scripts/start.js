@@ -5,6 +5,7 @@
 const { spawn } = require("child_process");
 
 const port = process.env.PORT || "3000";
+console.error("[compd] Starting Next.js on 0.0.0.0:%s (PORT=%s)", port, process.env.PORT || "(default)");
 const child = spawn(
   "npx",
   ["next", "start", "--hostname", "0.0.0.0", "-p", port],

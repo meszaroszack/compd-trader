@@ -105,7 +105,11 @@ Optional for local dev: leave `CREDENTIAL_ENCRYPTION_KEY`, `ADMIN_*`, or `NEXT_P
 
 - **Build vs runtime:** Build logs only show the image build. If the app doesn’t load, open the service in Railway → **Deployments** → click the latest deployment → **View Logs** (runtime logs). Check for startup errors (e.g. missing `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, or Supabase vars).
 - **Listen on all interfaces:** The start command is `npx next start --hostname 0.0.0.0 -p ${PORT:-3000}` so the server is reachable on the port Railway expects. If you override the start command in Railway (Settings → Deploy), use that exact command.
-- **If HTTP logs show "connection refused":** Redeploy with **Clear build cache** (in Railway: Deployments → three dots on latest → Redeploy → enable "Clear build cache"). Then check the **new** deployment’s Deploy Logs and HTTP Logs.
+- **If HTTP logs show "connection refused" or 502:**  
+  1. **Override start in Railway:** Service → **Settings** → **Deploy** → set **Start Command** to:  
+     `node scripts/start.js`  
+     (Save and redeploy.)  
+  2. **Confirm the script runs:** In the new deployment’s **Deploy Logs** you should see Next.js start (e.g. `Local: http://0.0.0.0:XXXX`). If the container stops or you still get 502, check the same logs for crash errors (e.g. missing env vars, DB connection).
 
 ## 8. Cap and security
 
