@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabaseServer";
 import { db } from "@/lib/db";
 import { decryptCredentialSafe } from "@/lib/credential-encrypt";
 import { kalshiCredentials, botConfigs, botModels, tradeEvents } from "../../../../../shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getBalance, getBtc15mMarkets, getBtcPrice } from "@/lib/kalshi";
 import { NextResponse } from "next/server";
 

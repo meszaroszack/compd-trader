@@ -1,8 +1,10 @@
 import { db } from "@/lib/db";
-import { profiles, inviteTokens, trades } from "../../../shared/schema";
+import { profiles, trades } from "../../../shared/schema";
 import { sql, desc, isNotNull } from "drizzle-orm";
-import { getRemainingSeats, createInviteToken } from "@/lib/invite";
+import { getRemainingSeats } from "@/lib/invite";
 import { AdminActions } from "./AdminActions";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const remaining = await getRemainingSeats();
@@ -20,15 +22,19 @@ export default async function AdminPage() {
     .where(isNotNull(profiles.inviteTokenUsed))
     .orderBy(desc(profiles.createdAt));
 
-  const tradeCounts = await db
-    .select({
-      userId: trades.userId,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(trades)
-    .groupBy(trades.userId);
-
-  const countByUser = new Map(tradeCounts.map((r) => [r.userId, r.count]));
+  let countByUser = new Map<string, number>();
+  try {
+    const tradeCounts = await db
+      .select({
+        userId: trades.userId,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(trades)
+      .groupBy(trades.userId);
+    countByUser = new Map(tradeCounts.map((r) => [r.userId, r.count]));
+  } catch {
+    // trades table may not exist yet
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-8">

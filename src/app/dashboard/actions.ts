@@ -6,10 +6,8 @@ import {
   botModels,
   botConfigs,
   kalshiCredentials,
-  inviteTokens,
-  profiles,
 } from "../../../shared/schema";
-import { eq, and, isNull, gt, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export type BotModelRow = typeof botModels.$inferSelect;

@@ -2,11 +2,11 @@
 
 import { createClient } from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 
 const INVITE_COOKIE = "compd_invite_token";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get("invite");
@@ -168,5 +168,19 @@ export default function SignupPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
+          <p className="text-zinc-500">Loading…</p>
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

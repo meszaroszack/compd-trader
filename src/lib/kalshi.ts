@@ -74,7 +74,7 @@ async function kalshiRequest(
   privateKeyPem: string,
   baseUrl: string,
   body?: object
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const fullPath = `/trade-api/v2${path}`;
   let lastError: Error | null = null;
 
@@ -123,9 +123,9 @@ async function kalshiRequest(
   throw lastError ?? new Error("Kalshi request failed");
 }
 
-async function kalshiPublic(path: string, env: string): Promise<any> {
-  const base = env === "demo" ? DEMO_BASE : PROD_BASE;
-  const response = await fetch(base + path);
+async function kalshiPublic(path: string, env: string): Promise<Record<string, unknown>> {
+  const baseUrl = env === "demo" ? DEMO_BASE : PROD_BASE;
+  const response = await fetch(baseUrl + path);
   if (!response.ok)
     throw new Error(`Kalshi public ${path} → ${response.status}`);
   return response.json();
@@ -144,18 +144,45 @@ export async function getBalance(
     privateKeyPem,
     base
   );
-  return (data.balance ?? 0) / 100;
+  return Number(data.balance ?? 0) / 100;
+}
+
+interface KalshiMarketRaw {
+  ticker?: string;
+  event_ticker?: string;
+  title?: string;
+  subtitle?: string;
+  yes_bid?: number;
+  yes_ask?: number;
+  no_bid?: number;
+  no_ask?: number;
+  yes_bid_dollars?: string;
+  yes_ask_dollars?: string;
+  no_bid_dollars?: string;
+  no_ask_dollars?: string;
+  last_price?: number;
+  last_price_dollars?: string;
+  volume_fp?: number;
+  volume?: number;
+  open_interest_fp?: number;
+  open_interest?: number;
+  close_time?: string;
+  status?: string;
+  open_time?: string;
+  floor_strike?: number;
+  yes_sub_title?: string;
+  strike_type?: string;
 }
 
 export async function getBtc15mMarkets(
   env = "production"
 ): Promise<KalshiMarket[]> {
-  const base = env === "demo" ? DEMO_BASE : PROD_BASE;
   const data = await kalshiPublic(
     `/markets?series_ticker=KXBTC15M&status=open&limit=10`,
     env
   );
-  return (data.markets ?? []).map((m: any) => {
+  const markets = (data.markets ?? []) as KalshiMarketRaw[];
+  return markets.map((m) => {
     const parseCents = (dollars: string | undefined, fallbackCents: number) => {
       if (dollars !== undefined && dollars !== null) {
         const v = Math.round(parseFloat(dollars) * 100);
@@ -174,9 +201,9 @@ export async function getBtc15mMarkets(
     );
 
     return {
-      ticker: m.ticker,
-      event_ticker: m.event_ticker,
-      title: m.title,
+      ticker: m.ticker ?? "",
+      event_ticker: m.event_ticker ?? "",
+      title: m.title ?? "",
       subtitle: m.subtitle,
       yes_bid,
       yes_ask,
@@ -187,12 +214,12 @@ export async function getBtc15mMarkets(
       last_price,
       volume: m.volume_fp ?? m.volume ?? 0,
       open_interest: m.open_interest_fp ?? m.open_interest ?? 0,
-      close_time: m.close_time,
-      status: m.status,
+      close_time: m.close_time ?? "",
+      status: m.status ?? "",
       open_time: m.open_time,
-      floor_strike: m.floor_strike ?? null,
-      yes_sub_title: m.yes_sub_title ?? null,
-      strike_type: m.strike_type ?? null,
+      floor_strike: m.floor_strike,
+      yes_sub_title: m.yes_sub_title,
+      strike_type: m.strike_type,
     };
   });
 }
@@ -201,7 +228,7 @@ export async function getOpenPositions(
   apiKeyId: string,
   privateKeyPem: string,
   env = "production"
-): Promise<any[]> {
+): Promise<unknown[]> {
   const base = env === "demo" ? DEMO_BASE : PROD_BASE;
   const data = await kalshiRequest(
     "GET",
@@ -210,14 +237,14 @@ export async function getOpenPositions(
     privateKeyPem,
     base
   );
-  return data.market_positions ?? [];
+  return Array.isArray(data.market_positions) ? data.market_positions : [];
 }
 
 export async function getSettledPositions(
   apiKeyId: string,
   privateKeyPem: string,
   env = "production"
-): Promise<any[]> {
+): Promise<unknown[]> {
   const base = env === "demo" ? DEMO_BASE : PROD_BASE;
   try {
     const data = await kalshiRequest(
@@ -227,7 +254,7 @@ export async function getSettledPositions(
       privateKeyPem,
       base
     );
-    return data.market_positions ?? [];
+    return Array.isArray(data.market_positions) ? data.market_positions : [];
   } catch {
     return [];
   }
@@ -238,7 +265,7 @@ export async function getOrderFills(
   privateKeyPem: string,
   orderId: string,
   env = "production"
-): Promise<any[]> {
+): Promise<unknown[]> {
   const base = env === "demo" ? DEMO_BASE : PROD_BASE;
   try {
     const data = await kalshiRequest(
@@ -248,7 +275,7 @@ export async function getOrderFills(
       privateKeyPem,
       base
     );
-    return data.fills ?? [];
+    return Array.isArray(data.fills) ? data.fills : [];
   } catch {
     return [];
   }
@@ -258,7 +285,7 @@ export async function getOpenOrders(
   apiKeyId: string,
   privateKeyPem: string,
   env = "production"
-): Promise<any[]> {
+): Promise<unknown[]> {
   const base = env === "demo" ? DEMO_BASE : PROD_BASE;
   const data = await kalshiRequest(
     "GET",
@@ -267,7 +294,7 @@ export async function getOpenOrders(
     privateKeyPem,
     base
   );
-  return data.orders ?? [];
+  return Array.isArray(data.orders) ? data.orders : [];
 }
 
 export async function placeOrder(
@@ -300,7 +327,7 @@ export async function placeOrder(
     base,
     body
   );
-  return data.order;
+  return data.order as KalshiOrder;
 }
 
 export async function cancelOrder(
@@ -344,7 +371,7 @@ export async function getBtcPriceHistory(count = 30): Promise<number[]> {
     const json = await res.json();
     const prices: number[] = (json.data?.prices ?? [])
       .slice(0, count)
-      .map((p: any) => parseFloat(p.price))
+      .map((p: { price?: string }) => parseFloat(p.price ?? "0"))
       .reverse();
     return prices;
   } catch {

@@ -2,7 +2,6 @@ import crypto from "crypto";
 
 const ALGO = "aes-256-gcm";
 const IV_LEN = 16;
-const SALT_LEN = 32;
 const TAG_LEN = 16;
 const KEY_LEN = 32;
 

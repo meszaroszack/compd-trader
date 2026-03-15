@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createInviteToken } from "@/lib/invite";
 
 export function AdminActions({ remaining }: { remaining: number }) {
   const [loading, setLoading] = useState(false);
