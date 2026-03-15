@@ -41,12 +41,14 @@ Optional for local dev: leave `CREDENTIAL_ENCRYPTION_KEY`, `ADMIN_*`, or `NEXT_P
 **1. CREDENTIAL_ENCRYPTION_KEY (min 32 characters)**
 
 - **What it’s for:** Encrypts users’ Kalshi private keys in the database. Must be at least 32 characters; keep it secret.
+- **Where to set it:**
+  - **Production (Railway):** Project → your service → **Variables** → Add variable: Name = `CREDENTIAL_ENCRYPTION_KEY`, Value = your 32+ character secret (no quotes). Save.
+  - **Local dev:** In the project root, copy `.env.local.example` to `.env.local` and set `CREDENTIAL_ENCRYPTION_KEY=` to the same or a dev-only value (min 32 chars). Never commit `.env.local`.
 - **How to create a value:**
   - **Option A:** Open [https://www.random.org/strings](https://www.random.org/strings) and generate one string, 32–64 characters (alphanumeric), and paste it as the value.
   - **Option B:** In a terminal run (PowerShell):  
     `-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | % {[char]$_})`  
     Copy the output and use it as the value.
-- **In Railway:** Name = `CREDENTIAL_ENCRYPTION_KEY`, Value = that long string (no quotes). Save.
 - **Important:** If you change this later, existing stored keys can’t be decrypted. Set it once and keep it the same (e.g. store it in a password manager).
 
 ---
