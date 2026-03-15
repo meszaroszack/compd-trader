@@ -101,10 +101,11 @@ Optional for local dev: leave `CREDENTIAL_ENCRYPTION_KEY`, `ADMIN_*`, or `NEXT_P
 - In your DNS: add the CNAME record Railway shows.
 - Set `NEXT_PUBLIC_APP_URL` to `https://app.compd.trade` and redeploy.
 
-## 7. If the app shows "Application failed to respond"
+## 7. If the app shows "Application failed to respond" or "connection refused"
 
 - **Build vs runtime:** Build logs only show the image build. If the app doesn’t load, open the service in Railway → **Deployments** → click the latest deployment → **View Logs** (runtime logs). Check for startup errors (e.g. missing `DATABASE_URL`, `CREDENTIAL_ENCRYPTION_KEY`, or Supabase vars).
-- **Listen on all interfaces:** The start command uses `next start --hostname 0.0.0.0` so the server is reachable inside the container. If you override the start command, keep the hostname.
+- **Listen on all interfaces:** The start command is `npx next start --hostname 0.0.0.0 -p ${PORT:-3000}` so the server is reachable on the port Railway expects. If you override the start command in Railway (Settings → Deploy), use that exact command.
+- **If HTTP logs show "connection refused":** Redeploy with **Clear build cache** (in Railway: Deployments → three dots on latest → Redeploy → enable "Clear build cache"). Then check the **new** deployment’s Deploy Logs and HTTP Logs.
 
 ## 8. Cap and security
 
